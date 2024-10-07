@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KBC Game Player</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>KBC Game Player</h1>
+    <input type="text" id="name" placeholder="Enter your name">
+    <button id="join">Join</button>
+    <div id="question"></div>
+    <input type="text" id="answer" placeholder="Your answer">
+    <button id="submit">Submit</button>
+    <script>
+        const ws = new WebSocket('ws://localhost:3000');
+        let playerName;
+
+        document.getElementById('join').onclick = () => {
+            playerName = document.getElementById('name').value;
+            ws.send(JSON.stringify({ type: 'join', name: playerName }));
+        };
+
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            if (data.question) {
+                document.getElementById('question').innerText = data.question;
+            } else if (data.result) {
+                if (data.result === 'correct') {
+                    alert(`Congratulations, ${data.name}!`);
+                } else {
+                    alert('Wrong answer, try again!');
+                }
+            }
+        };
+
+        document.getElementById('submit').onclick = () => {
+            const answer = document.getElementById('answer').value;
+            ws.send(JSON.stringify({ type: 'answer', name: playerName, answer }));
+        };
+    </script>
+</body>
+</html>
